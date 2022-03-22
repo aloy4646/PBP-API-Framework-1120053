@@ -38,11 +38,7 @@ func (c Users) GetAllUsers() revel.Result {
 	for rows.Next() {
 		if err := rows.Scan(&user.Id, &user.Name, &user.Age, &user.Address, &user.Email, &user.Password); err != nil {
 			log.Println(err.Error())
-			var errorResult entities.Response
-			errorResult.Success = false
-			errorResult.Status = 402
-			errorResult.Message = "Could not get the users"
-			return c.RenderJSON(errorResult)
+			return errorResponse(c, 401, "Could not get the users")
 		} else {
 			users = append(users, user)
 		}
@@ -77,11 +73,7 @@ func (c Users) InsertNewUser() revel.Result {
 
 	if errQuery != nil {
 		log.Println(errQuery)
-		var errorResult entities.Response
-		errorResult.Success = false
-		errorResult.Status = 401
-		errorResult.Message = "Query Error"
-		return c.RenderJSON(errorResult)
+		return errorResponse(c, 401, "Query Error")
 	}
 
 	id, _ := resultQuery.LastInsertId()
@@ -118,11 +110,7 @@ func (c Users) UpdateUser() revel.Result {
 
 	if errQuery != nil {
 		log.Println(errQuery)
-		var errorResult entities.Response
-		errorResult.Success = false
-		errorResult.Status = 401
-		errorResult.Message = "Query Error"
-		return c.RenderJSON(errorResult)
+		return errorResponse(c, 401, "Query Error")
 	}
 
 	rowsAffected, _ := resultQuery.RowsAffected()
@@ -141,11 +129,7 @@ func (c Users) DeleteUser() revel.Result {
 
 	if err != nil {
 		log.Println(err)
-		var errorResult entities.Response
-		errorResult.Success = false
-		errorResult.Status = 401
-		errorResult.Message = "Query Error"
-		return c.RenderJSON(errorResult)
+		return errorResponse(c, 401, "Query Error")
 	}
 
 	rowsAffected, _ := resultQuery.RowsAffected()
@@ -165,4 +149,12 @@ func responseFromRowsAffected(c Users, rowsAffected int64) revel.Result {
 	}
 
 	return c.RenderJSON(result)
+}
+
+func errorResponse(c Users, status int, message string) revel.Result {
+	var errorResult entities.Response
+	errorResult.Success = false
+	errorResult.Status = status
+	errorResult.Message = message
+	return c.RenderJSON(errorResult)
 }
